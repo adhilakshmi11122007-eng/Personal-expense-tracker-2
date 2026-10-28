@@ -1,0 +1,330 @@
+[28/10, 2:18 pm] +91 86828 62084: <!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>Personal Expense Tracker</title>
+ <link rel="stylesheet" href="style.css">
+</head>
+<body>
+ <header class="app-header">
+ <h1>Personal Expense Tracker</h1>
+ <p>Record income and expenses, track spending and view summaries</p>
+ </header>
+ <main class="container">
+ <!-- Summary cards -->
+ <section class="cards">
+ <div class="card income"><span>Total Income</span><strong id="totalIncome">0.00</strong></div>
+ <div class="card expense"><span>Total Expense</span><strong id="totalExpense">0.00</strong></div>
+ <div class="card balance"><span>Balance</span><strong id="balance">0.00</strong></div>
+ </section>
+ <div class="grid">
+ <!-- Transaction form -->
+ <section class="panel">
+ <h2 id="formTitle">Add Transaction</h2>
+ <form id="txForm">
+ <input type="hidden" id="txId">
+ <label>Type
+ <select id="type">
+ <option value="expense">Expense</option>
+ <option value="income">Income</option>
+ </select>
+ </label>
+ <label>Amount
+ <input type="number" id="amount" min="0.01" step="0.01" placeholder="0.00" required>
+ </label>
+ <label>Date
+ <input type="date" id="date" required>
+ </label>
+ <label>Category
+ <select id="category" required></select>
+ </label>
+ <label>Description
+ <input type="text" id="description" maxlength="80" placeholder="Short note" required>
+ </label>
+ <div class="btn-row">
+ <button type="submit" class="btn primary" id="saveBtn">Add</button>
+ <button type="button" class="btn" id="cancelBtn" hidden>Cancel</button>
+ </div>
+ </form>
+ <h3>Manage Categories</h3>
+ <div class="cat-add">
+ <input type="text" id="newCategory" placeholder="New category">
+ <button type="button" class="btn primary" id="addCatBtn">Add</button>
+ </div>
+ <ul id="catList" class="cat-list"></ul>
+ </section>
+ <!-- Transactions list -->
+ <section class="panel">
+ <h2>Transactions</h2>
+ <div class="filters">
+ <input type="text" id="search" placeholder="Search description">
+ <select id="filterType">
+ <option value="all">All types</option>
+ <option value="income">Income</option>
+ <option value="expense">Expense</option>
+ </select>
+ <select id="filterCategory"></select>
+ <input type="month" id="filterMonth">
+ </div>
+ <div class="table-wrap">
+ <table>
+ <thead>
+<tr><th>Date</th><th>Category</th><th>Description</th><th>Type</th><th>Amount</th><th>Action</th></tr>
+ </thead>
+ <tbody id="txBody"></tbody>
+ </table>
+ <p id="emptyMsg" class="empty" hidden>No transactions found.</p>
+ </div>
+ </section>
+ </div>
+ <!-- Charts -->
+ <section class="panel">
+ <h2>Spending Analysis</h2>
+ <div class="charts">
+ <div>
+ <h3>Expense by Category</h3>
+ <canvas id="pieChart" width="360" height="260"></canvas>
+ <ul id="legend" class="legend"></ul>
+ </div>
+ <div>
+ <h3>Monthly Income vs Expense</h3>
+ <canvas id="barChart" width="420" height="260"></canvas>
+ </div>
+ </div>
+ </section>
+ </main>
+ <footer class="app-footer">Personal Expense Tracker &middot; HTML, CSS and JavaScript</footer>
+ <script src="script.js"></script>
+</body>
+[28/10, 2:18 pm] +91 86828 62084: :root {
+ --blue: #1e40af;
+ --blue-light: #eff6ff;
+ --green: #15803d;
+ --red: #b91c1c;
+ --text: #1f2937;
+ --border: #dbe3ee;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+ font-family: "Segoe UI", Roboto, Arial, sans-serif;
+ background: #f3f6fb;
+ color: var(--text);
+ line-height: 1.5;
+}
+.app-header {
+ background: var(--blue);
+ color: #fff;
+ text-align: center;
+ padding: 22px 12px;
+}
+.app-header p { opacity: .85; font-size: 14px; }
+.container { max-width: 1150px; margin: 20px auto; padding: 0 14px; }
+.cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 18px; }
+.card {
+ background: #fff; border-radius: 12px; padding: 16px;
+ border-left: 6px solid var(--blue);
+ box-shadow: 0 2px 6px rgba(0,0,0,.06);
+ display: flex; flex-direction: column;
+}
+.card span { font-size: 13px; color: #6b7280; }
+.card strong { font-size: 24px; }
+.card.income { border-color: var(--green); }
+.card.income strong { color: var(--green); }
+.card.expense { border-color: var(--red); }
+.card.expense strong { color: var(--red); }
+.grid { display: grid; grid-template-columns: 340px 1fr; gap: 18px; margin-bottom: 18px; }
+.panel {
+ background: #fff; border-radius: 12px; padding: 18px;
+ box-shadow: 0 2px 6px rgba(0,0,0,.06);
+}
+.panel h2 { color: var(--blue); font-size: 18px; margin-bottom: 12px; }
+.panel h3 { font-size: 15px; margin: 16px 0 8px; }
+label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 10px; }
+input, select {
+ width: 100%; padding: 9px 10px; margin-top: 4px;
+ border: 1px solid var(--border); border-radius: 8px; font-size: 14px;
+}
+input:focus, select:focus { outline: 2px solid #93c5fd; }
+.btn {
+ padding: 9px 16px; border: 1px solid var(--border); border-radius: 8px;
+ background: #fff; cursor: pointer; font-size: 14px;
+}
+.btn.primary { background: #2563eb; color: #fff; border-color: #2563eb; }
+.btn.small { padding: 4px 9px; font-size: 12px; }
+.btn.danger { color: var(--red); border-color: #fecaca; }
+.btn-row { display: flex; gap: 8px; }
+.cat-add { display: flex; gap: 8px; }
+.cat-add input { margin-top: 0; }
+.cat-list { list-style: none; margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; }
+.cat-list li {
+ background: var(--blue-light); border: 1px solid var(--border);
+ border-radius: 20px; padding: 3px 6px 3px 12px; font-size: 13px;
+}
+.cat-list button { border: none; background: none; cursor: pointer; color: var(--red); font-size: 15px; }
+.filters { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+.filters input, .filters select { margin-top: 0; }
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th { background: var(--blue-light); text-align: left; padding: 9px; color: var(--blue); }
+td { padding: 9px; border-bottom: 1px solid var(--border); }
+td.amt.income { color: var(--green); font-weight: 600; }
+td.amt.expense { color: var(--red); font-weight: 600; }
+.empty { text-align: center; padding: 18px; color: #6b7280; }
+.charts { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+canvas { max-width: 100%; }
+.legend { list-style: none; font-size: 13px; margin-top: 8px; }
+.legend li { display: flex; align-items: center; gap: 6px; }
+.legend i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+.app-footer { text-align: center; padding: 16px; font-size: 13px; color: #6b7280; }
+@media (max-width: 860px) {
+ .grid, .charts { grid-template-columns: 1fr; }
+ .cards { grid-template-columns: 1fr; }
+ .filters { grid-template-columns: 1fr 1fr; }
+}
+[28/10, 2:18 pm] +91 86828 62084: // Personal Expense Tracker - script.js
+// Data is stored in the browser using localStorage.
+const TX_KEY = "pet_transactions";
+const CAT_KEY = "pet_categories";
+const COLORS = ["#2563eb", "#dc2626", "#16a34a", "#f59e0b", "#7c3aed", "#0891b2", "#db2777", "#65a30d",
+ "#ea580c", "#475569"];
+let transactions = JSON.parse(localStorage.getItem(TX_KEY)) || [];
+let categories = JSON.parse(localStorage.getItem(CAT_KEY)) ||
+ ["Food", "Travel", "Shopping", "Bills", "Education", "Health", "Salary", "Other"];
+// ---------- DOM references ----------
+const form = document.getElementById("txForm");
+const txId = document.getElementById("txId");
+const typeEl = document.getElementById("type");
+const amountEl = document.getElementById("amount");
+const dateEl = document.getElementById("date");
+const categoryEl = document.getElementById("category");
+const descEl = document.getElementById("description");
+const saveBtn = document.getElementById("saveBtn");
+const cancelBtn = document.getElementById("cancelBtn");
+const formTitle = document.getElementById("formTitle");
+const txBody = document.getElementById("txBody");
+const emptyMsg = document.getElementById("emptyMsg");
+const searchEl = document.getElementById("search");
+const filterType = document.getElementById("filterType");
+const filterCategory = document.getElementById("filterCategory");
+const filterMonth = document.getElementById("filterMonth");
+const newCategory = document.getElementById("newCategory");
+const catList = document.getElementById("catList");
+// ---------- Helpers ----------
+function save() {
+ localStorage.setItem(TX_KEY, JSON.stringify(transactions));
+ localStorage.setItem(CAT_KEY, JSON.stringify(categories));
+}
+function money(n) {
+ return Number(n).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+function today() {
+ return new Date().toISOString().split("T")[0];
+}
+function escapeHTML(s) {
+ const d = document.createElement("div");
+ d.textContent = s;
+ return d.innerHTML;
+}
+// ---------- Categories ----------
+function renderCategories() {
+ categoryEl.innerHTML = categories.map(c => `<option value="${escapeHTML(c)}">${escapeHTML(c)}</option>`).join("");
+ const current = filterCategory.value || "all";
+ filterCategory.innerHTML = '<option value="all">All categories</option>' +
+ categories.map(c => `<option value="${escapeHTML(c)}">${escapeHTML(c)}</option>`).join("");
+ filterCategory.value = categories.includes(current) ? current : "all";
+ catList.innerHTML = categories.map((c, i) =>
+ `<li>${escapeHTML(c)} <button title="Delete" onclick="deleteCategory(${i})">&times;</button></li>`).join("");
+}
+document.getElementById("addCatBtn").addEventListener("click", () => {
+ const name = newCategory.value.trim();
+ if (!name) return alert("Enter a category name.");
+ if (categories.some(c => c.toLowerCase() === name.toLowerCase())) return alert("Category already exists.");
+ categories.push(name);
+ newCategory.value = "";
+ save();
+ renderCategories();
+});
+function deleteCategory(index) {
+ const name = categories[index];
+ if (transactions.some(t => t.category === name)) {
+ return alert("This category is used by transactions and cannot be deleted.");
+ }
+ if (categories.length === 1) return alert("At least one category is required.");
+ categories.splice(index, 1);
+ save();
+ renderCategories();
+}
+// ---------- Transactions: add / edit / delete ----------
+form.addEventListener("submit", e => {
+ e.preventDefault();
+ const amount = parseFloat(amountEl.value);
+ if (!(amount > 0)) return alert("Amount must be greater than zero.");
+ const data = {
+ type: typeEl.value,
+ amount: amount,
+ date: dateEl.value,
+ category: categoryEl.value,
+ description: descEl.value.trim()
+ };
+ if (txId.value) {
+ const idx = transactions.findIndex(t => t.id === txId.value);
+ if (idx !== -1) transactions[idx] = { id: txId.value, ...data };
+ } else {
+ transactions.push({ id: Date.now().toString(), ...data });
+ }
+ save();
+ resetForm();
+ refresh();
+});
+function editTransaction(id) {
+ const t = transactions.find(x => x.id === id);
+ if (!t) return;
+ txId.value = t.id;
+ typeEl.value = t.type;
+ amountEl.value = t.amount;
+ dateEl.value = t.date;
+ categoryEl.value = t.category;
+ descEl.value = t.description;
+ formTitle.textContent = "Edit Transaction";
+ saveBtn.textContent = "Update";
+ cancelBtn.hidden = false;
+ window.scrollTo({ top: 0, behavior: "smooth" });
+}
+function deleteTransaction(id) {
+ if (!confirm("Delete this transaction?")) return;
+ transactions = transactions.filter(t => t.id !== id);
+ save();
+ refresh();
+}
+function resetForm() {
+ form.reset();
+ txId.value = "";
+ dateEl.value = today();
+ formTitle.textContent = "Add Transaction";
+ saveBtn.textContent = "Add";
+ cancelBtn.hidden = true;
+}
+cancelBtn.addEventListener("click", resetForm);
+// ---------- Filtering and listing ----------
+function filteredTransactions() {
+ const q = searchEl.value.trim().toLowerCase();
+ return transactions
+ .filter(t => (filterType.value === "all" || t.type === filterType.value))
+ .filter(t => (filterCategory.value === "all" || t.category === filterCategory.value))
+ .filter(t => (!filterMonth.value || t.date.startsWith(filterMonth.value)))
+ .filter(t => (!q || t.description.toLowerCase().includes(q)))
+ .sort((a, b) => b.date.localeCompare(a.date));
+}
+function renderTable() {
+ const list = filteredTransactions();
+ txBody.innerHTML = list.map(t => `
+ <tr>
+ <td>${t.date}</td>
+ <td>${escapeHTML(t.category)}</td>
+ <td>${escapeHTML(t.description)}</td>
+ <td>${t.type}</td>
+ <td class="amt ${t.type}">${t.type === "income" ? "+" : "-"}${money(t.amount)}</td>
+ <td>
+ <button class="btn small" onclick="editTransaction('${t.id}')">Edit</button>
+ <button class="btn small danger" onclick
